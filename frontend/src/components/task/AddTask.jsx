@@ -57,7 +57,7 @@ const AddTask = ({ open, setOpen }) => {
               error={errors.title ? errors.title.message : ""}
             />
 
-            <UserList setTeam={setTeam} team={team} />
+            {/*<UserList setTeam={setTeam} team={team} />*/}
 
             <div className='flex gap-4'>
               <SelectList

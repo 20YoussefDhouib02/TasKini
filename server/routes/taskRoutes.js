@@ -15,7 +15,7 @@ import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
 
 const router = express.Router();
 
-router.post("/create", protectRoute, isAdminRoute, createTask);
+router.post("/create", createTask);
 router.post("/duplicate/:id", protectRoute, isAdminRoute, duplicateTask);
 router.post("/activity/:id", protectRoute, postTaskActivity);
 
