@@ -42,5 +42,38 @@ const isAdminRoute = (req, res, next) => {
     });
   }
 };
+const checkAuth = async (req, res, next) => {
+  try {
+    let token = req.cookies?.token;  // Extract token from cookies
 
-export { isAdminRoute, protectRoute };
+    if (token) {
+      // Verify the token using JWT
+      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+        if (err) {
+          return res.status(401).json({
+            status: false,
+            message: "Token is invalid. Please login again.",
+          });
+        }
+
+        // If token is valid, return a success response
+        res.status(200).json({
+          status: true,
+          message: "User is authenticated",
+        });
+      });
+    } else {
+      return res.status(401).json({
+        status: false,
+        message: "No token found. Please login.",
+      });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(401).json({
+      status: false,
+      message: "Token verification failed. Please login again.",
+    });
+  }
+};
+export { isAdminRoute, protectRoute ,checkAuth};

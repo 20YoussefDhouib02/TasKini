@@ -29,8 +29,8 @@ export const registerUser = async (req, res) => {
       isAdmin ? createJWT(res, user._id) : null;
 
       user.password = undefined;
-
-      res.status(201).json(user);
+     
+      return res.status(201).json(user);
     } else {
       return res
         .status(400)
@@ -67,7 +67,7 @@ export const loginUser = async (req, res) => {
       createJWT(res, user._id);
 
       user.password = undefined;
-
+     
       res.status(200).json(user);
     } else {
       return res
