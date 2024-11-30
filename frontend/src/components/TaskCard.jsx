@@ -15,6 +15,7 @@ import UserInfo from "./UserInfo";
 import { IoMdAdd } from "react-icons/io";
 import AddSubTask from "./task/AddSubTask";
 
+
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
   medium: <MdKeyboardArrowUp />,
@@ -39,7 +40,7 @@ const TaskCard = ({ task }) => {
             <span className='uppercase'>{task?.priority} Priority</span>
           </div>
 
-          {user?.isAdmin && <TaskDialog task={task} />}
+          {user && <TaskDialog task={task} />}
         </div>
 
         <>
@@ -50,8 +51,12 @@ const TaskCard = ({ task }) => {
             <h4 className='line-clamp-1 text-black'>{task?.title}</h4>
           </div>
           <span className='text-sm text-gray-600'>
-            {formatDate(new Date(task?.date))}
-          </span>
+      From 
+      {formatDate(new Date(task?.startAt))}</span> <br></br>
+      <span className='text-sm text-gray-600'>
+      To 
+      {formatDate(new Date(task?.endAt))}
+    </span>
         </>
 
         <div className='w-full border-t border-gray-200 my-2' />
@@ -113,7 +118,6 @@ const TaskCard = ({ task }) => {
         <div className='w-full pb-2'>
           <button
             onClick={() => setOpen(true)}
-            disabled={user.isAdmin ? false : true}
             className='w-full flex gap-4 items-center text-sm text-gray-500 font-semibold disabled:cursor-not-allowed disabled::text-gray-300'
           >
             <IoMdAdd className='text-lg' />

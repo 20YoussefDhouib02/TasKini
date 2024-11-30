@@ -10,6 +10,8 @@ import {
   postTaskActivity,
   trashTask,
   updateTask,
+  getstatsfordashboard,
+  getTasksAssignedByUserId,
 } from "../controllers/taskController.js";
 import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
 
@@ -18,12 +20,14 @@ const router = express.Router();
 router.post("/create", createTask);
 router.post("/duplicate/:id", protectRoute, isAdminRoute, duplicateTask);
 router.post("/activity/:id", protectRoute, postTaskActivity);
-
+router.get("/dashstats",getstatsfordashboard);
+router.get("/agenda",getTasksAssignedByUserId)
 router.get("/dashboard", protectRoute, dashboardStatistics);
 router.get("/", protectRoute, getTasks);
 router.get("/:id", protectRoute, getTask);
 
-router.put("/create-subtask/:id", protectRoute, isAdminRoute, createSubTask);
+
+router.put("/create-subtask",  createSubTask);
 router.put("/update/:id", protectRoute, isAdminRoute, updateTask);
 router.put("/:id", protectRoute, isAdminRoute, trashTask);
 
