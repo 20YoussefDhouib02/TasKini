@@ -127,3 +127,26 @@
   }
 }
 
+/* Add this CSS to your global styles or a CSS file */
+.rbc-day-view .rbc-time-content {
+  overflow-y: auto !important;
+  max-height: 400px; /* Adjust as needed */
+}
+
+.rbc-day-slot {
+  overflow-x: hidden !important;
+}
+
+/* Optional: Style for scrollbars */
+.rbc-day-view .rbc-time-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rbc-day-view .rbc-time-content::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 4px;
+}
+
+.rbc-day-view .rbc-time-content::-webkit-scrollbar-thumb:hover {
+  background-color: #555;
+}

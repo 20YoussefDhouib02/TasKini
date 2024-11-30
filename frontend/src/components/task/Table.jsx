@@ -38,7 +38,6 @@ const Table = ({ tasks }) => {
         <th className='py-2'>Priority</th>
         <th className='py-2 line-clamp-1'>Created At</th>
         <th className='py-2'>Assets</th>
-        <th className='py-2'>Team</th>
       </tr>
     </thead>
   );
@@ -69,7 +68,7 @@ const Table = ({ tasks }) => {
 
       <td className='py-2'>
         <span className='text-sm text-gray-600'>
-          {formatDate(new Date(task?.date))}
+          {formatDate(new Date(task?.createdAt))}
         </span>
       </td>
 

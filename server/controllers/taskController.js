@@ -1,23 +1,21 @@
 import Notice from "../models/notification.js";
 import Task from "../models/task.js";
 import User from "../models/user.js";
+import mongoose from 'mongoose';
 
 export const createTask = async (req, res) => {
   try {
-    const { userId } = req.user;
+    const { userId, title, startAt, endAt, priority, stage, assets } = req.body;
 
-    const { title, team, stage, date, priority, assets } = req.body;
-
-    let text = "New task has been assigned to you";
-    if (team?.length > 1) {
-      text = text + ` and ${team?.length - 1} others.`;
+    // Validate the required fields
+    if (!userId || !title || !startAt || !endAt) {
+      return res.status(400).json({ status: false, message: "Missing required fields." });
     }
 
-    text =
-      text +
-      ` The task priority is set a ${priority} priority, so check and act accordingly. The task date is ${new Date(
-        date
-      ).toDateString()}. Thank you!!!`;
+    // Create activity log text
+    const text = `A new task titled "${title}" has been assigned to you with a ${priority} priority, starting at ${new Date(
+      startAt
+    ).toLocaleString()} and ending at ${new Date(endAt).toLocaleString()}.`;
 
     const activity = {
       type: "assigned",
@@ -25,30 +23,32 @@ export const createTask = async (req, res) => {
       by: userId,
     };
 
+    // Create the task
     const task = await Task.create({
+      userId,
       title,
-      team,
-      stage: stage.toLowerCase(),
-      date,
+      startAt,
+      endAt,
       priority: priority.toLowerCase(),
+      stage: stage.toLowerCase(),
+      activities: [activity],
       assets,
-      activities: activity,
+    });
+    const notice = await Notice.create({
+      UserId: [userId], // The user who will receive the notification
+      text: text,
+      task: task._id, // Link the task to the notification
+      notiType: "alert", // You can set it to "message" if needed
+      isRead: [],
     });
 
-    await Notice.create({
-      team,
-      text,
-      task: task._id,
-    });
-
-    res
-      .status(200)
-      .json({ status: true, task, message: "Task created successfully." });
+    res.status(200).json({ status: true, task, message: "Task created successfully." });
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
+    console.error("Error creating task:", error);
+    return res.status(500).json({ status: false, message: error.message });
   }
 };
+
 
 export const duplicateTask = async (req, res) => {
   try {
@@ -254,7 +254,7 @@ export const createSubTask = async (req, res) => {
   try {
     const { title, tag, date } = req.body;
 
-    const { id } = req.params;
+    const { id } = req.body;
 
     const newSubTask = {
       title,
@@ -350,5 +350,74 @@ export const deleteRestoreTask = async (req, res) => {
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
+export const getstatsfordashboard= async (req, res) => {
+  try {
+    const { userId } = req.query; // Use query parameters
+
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ status: false, message: "Invalid User ID format." });
+    }
+
+    // Fetch tasks for the user
+    const tasks = await Task.find({ userId: new mongoose.Types.ObjectId(userId) });
+
+    // Aggregate statistics
+    const stats = tasks.reduce(
+      (acc, task) => {
+        acc[task.stage] = (acc[task.stage] || 0) + 1;
+        acc.total += 1;
+        return acc;
+      },
+      { todo: 0, "in progress": 0, completed: 0, total: 0 }
+    );
+
+    // Return stats and tasks (if needed)
+    res.status(200).json({
+      status: true,
+      stats,
+      tasks,
+      message: "Task statistics retrieved successfully.",
+    });
+  } catch (error) {
+    console.error("Error retrieving task stats:", error);
+    res.status(500).json({ status: false, message: "An error occurred while retrieving task stats." });
+  }
+};
+export const getTasksAssignedByUserId = async (req, res) => {
+  try {
+    const { userId } = req.query; // Use query parameters
+
+    // Validate userId
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ status: false, message: "Invalid User ID format." });
+    }
+
+    // Fetch tasks assigned by the user
+    const tasks = await Task.find({ "activities.by": new mongoose.Types.ObjectId(userId) });
+
+    // Check if tasks exist
+    if (!tasks || tasks.length === 0) {
+      return res.status(404).json({
+        status: false,
+        message: "No tasks found assigned by the specified user.",
+      });
+    }
+
+    // Return the tasks
+    res.status(200).json({
+      status: true,
+      tasks,
+      message: "Tasks assigned by the user retrieved successfully.",
+    });
+  } catch (error) {
+    console.error("Error retrieving tasks assigned by user:", error);
+    res.status(500).json({
+      status: false,
+      message: "An error occurred while retrieving tasks.",
+    });
   }
 };

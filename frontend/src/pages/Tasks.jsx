@@ -3,23 +3,23 @@ import { FaList } from "react-icons/fa";
 import { MdGridView } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { useParams, useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 import Loading from "../components/Loader";
 import Title from "../components/Title";
 import Button from "../components/Button";
 import Tabs from "../components/Tabs";
 import TaskTitle from "../components/TaskTitle";
 import BoardView from "../components/BoardView";
-import { tasks } from "../assets/data";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
 import axios from "axios";
 
+// Check if the user is authenticated
 const checkAuth = async () => {
   try {
     const response = await axios.get("http://localhost:8800/api/user/check-auth", {
-      withCredentials: true, // Sends cookies with the request
+      withCredentials: true,
     });
-
     return response.data.status === true;
   } catch (error) {
     console.error("Error checking auth:", error);
@@ -27,23 +27,44 @@ const checkAuth = async () => {
   }
 };
 
-const TABS = [
-  { title: "Board View", icon: <MdGridView /> },
-  { title: "List View", icon: <FaList /> },
-];
-
+// Task types with background color classes
 const TASK_TYPE = {
   todo: "bg-blue-600",
   "in progress": "bg-yellow-600",
   completed: "bg-green-600",
 };
 
+// Tabs configuration
+const TABS = [
+  { title: "Board View", icon: <MdGridView /> },
+  { title: "List View", icon: <FaList /> },
+];
+
+// Function to fetch tasks for a user
+const fetchTasksForUser = async (userId) => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8800/api/task/agenda",
+      {
+        params: { userId },
+        withCredentials: true,
+      }
+    );
+    return response.data.tasks || [];
+  } catch (error) {
+    console.error("Error fetching tasks:", error);
+    return [];
+  }
+};
+
 const Tasks = () => {
   const navigate = useNavigate();
   const params = useParams();
+  const { user } = useSelector((state) => state.auth);
   const [selected, setSelected] = useState(0);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [tasks, setTasks] = useState([]);
 
   const status = params?.status || "";
 
@@ -51,11 +72,34 @@ const Tasks = () => {
     const checkUserAuth = async () => {
       const isAuthenticated = await checkAuth();
       if (!isAuthenticated) {
-        navigate("/log-in"); // Redirect to login if not authenticated
+        navigate("/log-in");
       }
     };
+
+    const fetchTasks = async () => {
+      if (user?._id) {
+        setLoading(true);
+        const fetchedTasks = await fetchTasksForUser(user._id);
+        setTasks(fetchedTasks);
+        setLoading(false);
+      } else {
+        setLoading(false);
+      }
+    };
+
     checkUserAuth();
-  }, [navigate]);
+    fetchTasks();
+  }, [navigate, user?._id]);
+
+  // Filter tasks based on status
+  const filteredTasks = tasks.filter((task) => {
+    if(task.isTrashed==false){
+    if (!status) return true; // Return all tasks if no status is specified
+    if (status === "todo") return task.stage === "todo";
+    if (status === "in-progress") return task.stage === "in progress";
+    if (status === "completed") return task.stage === "completed";}
+    return false; // Return no tasks if the status doesn't match any condition
+  });
 
   return loading ? (
     <div className="py-10">
@@ -89,10 +133,10 @@ const Tasks = () => {
         )}
 
         {selected !== 1 ? (
-          <BoardView tasks={tasks} />
+          <BoardView tasks={filteredTasks} />
         ) : (
           <div className="w-full">
-            <Table tasks={tasks} />
+            <Table tasks={filteredTasks} />
           </div>
         )}
       </Tabs>

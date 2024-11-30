@@ -1,13 +1,15 @@
 export const formatDate = (date) => {
-    // Get the month, day, and year
-    const month = date.toLocaleString("en-US", { month: "short" });
-    const day = date.getDate();
-    const year = date.getFullYear();
-  
-    const formattedDate = `${day}-${month}-${year}`;
-  
-    return formattedDate;
-  };
+  // Get the month, day, year, and time (hour and minute)
+  const month = date.toLocaleString("en-US", { month: "short" });
+  const day = date.getDate();
+  const year = date.getFullYear();
+  const time = date.toLocaleTimeString("en-US", { hour: '2-digit', minute: '2-digit', hour12: true });
+
+  const formattedDate = ` ${day} ${month} ${year} at ${time} `;
+
+  return formattedDate;
+};
+
   
   export function dateFormatter(dateString) {
     const inputDate = new Date(dateString);

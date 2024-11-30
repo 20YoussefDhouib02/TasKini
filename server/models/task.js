@@ -2,8 +2,10 @@ import mongoose, { Schema } from "mongoose";
 
 const taskSchema = new Schema(
   {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     title: { type: String, required: true },
-    date: { type: Date, default: new Date() },
+    startAt: { type: Date, required: true }, // Stores full start date and time
+    endAt: { type: Date, required: true },   // Stores full end date and time
     priority: {
       type: String,
       default: "normal",
@@ -29,20 +31,19 @@ const taskSchema = new Schema(
           ],
         },
         activity: String,
-        date: { type: Date, default: new Date() },
+        date: { type: Date, default: Date.now },
         by: { type: Schema.Types.ObjectId, ref: "User" },
       },
     ],
-
     subTasks: [
       {
         title: String,
-        date: Date,
+        startAt: Date,
+        endAt: Date,
         tag: String,
       },
     ],
     assets: [String],
-    team: [{ type: Schema.Types.ObjectId, ref: "User" }],
     isTrashed: { type: Boolean, default: false },
   },
   { timestamps: true }

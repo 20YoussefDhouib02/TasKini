@@ -21,12 +21,12 @@ router.post("/logout", logoutUser);
 
 
 router.get("/get-team", protectRoute, isAdminRoute, getTeamList);
-router.get("/notifications", protectRoute, getNotificationsList);
+router.get("/notifications", getNotificationsList);
 router.get("/check-auth", checkAuth);
 
 router.put("/profile", protectRoute, updateUserProfile);
 router.put("/read-noti", protectRoute, markNotificationRead);
-router.put("/change-password", protectRoute, changeUserPassword);
+router.put("/change-password", changeUserPassword);
 
 // //   FOR ADMIN ONLY - ADMIN ROUTES
 router

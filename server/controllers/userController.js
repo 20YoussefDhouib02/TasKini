@@ -2,6 +2,7 @@ import { response } from "express";
 import User from "../models/user.js";
 import { createJWT } from "../utils/index.js";
 import Notice from "../models/notification.js";
+import mongoose from 'mongoose';
 
 export const registerUser = async (req, res) => {
   try {
@@ -107,11 +108,11 @@ export const getTeamList = async (req, res) => {
 
 export const getNotificationsList = async (req, res) => {
   try {
-    const { userId } = req.user;
-
+    const { userId } = req.body;
+    const objectId = new mongoose.Types.ObjectId(userId);
     const notice = await Notice.find({
-      team: userId,
-      isRead: { $nin: [userId] },
+      UserId: objectId,
+     // isRead: { $nin: [userId] },
     }).populate("task", "title");
 
     res.status(201).json(notice);
@@ -187,12 +188,12 @@ export const markNotificationRead = async (req, res) => {
 
 export const changeUserPassword = async (req, res) => {
   try {
-    const { userId } = req.user;
+    const { userId,password } = req.body;
 
     const user = await User.findById(userId);
-
-    if (user) {
-      user.password = req.body.password;
+    const isMatch = await user.matchPassword(password);
+    if (user && isMatch) {
+      user.password = req.body.newPassword;
 
       await user.save();
 
@@ -200,7 +201,7 @@ export const changeUserPassword = async (req, res) => {
 
       res.status(201).json({
         status: true,
-        message: `Password chnaged successfully.`,
+        message: `Password changed successfully.`,
       });
     } else {
       res.status(404).json({ status: false, message: "User not found" });

@@ -7,13 +7,14 @@ import {
   MdKeyboardDoubleArrowUp,
   MdOutlineRestore,
 } from "react-icons/md";
-import { tasks } from "../assets/data";
 import Title from "../components/Title";
 import Button from "../components/Button";
 import { PRIOTITYSTYELS, TASK_TYPE } from "../utils";
 import ConfirmatioDialog from "../components/Dialogs";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import Loading from "../components/Loader"; // Ensure this is imported
+import { useSelector } from "react-redux";
 
 const checkAuth = async () => {
   try {
@@ -35,10 +36,13 @@ const ICONS = {
 
 const Trash = () => {
   const navigate = useNavigate();
+  const { user } = useSelector((state) => state.auth); // Get user from Redux store
   const [openDialog, setOpenDialog] = useState(false);
   const [msg, setMsg] = useState(null);
   const [type, setType] = useState("delete");
   const [selected, setSelected] = useState("");
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const verifyAuth = async () => {
@@ -48,8 +52,27 @@ const Trash = () => {
       }
     };
 
+    const fetchTasks = async () => {
+      if (user?._id) {
+        try {
+          const response = await axios.get("http://localhost:8800/api/task/agenda", {
+            params: { userId: user._id}, // Filter for trashed tasks and by userId
+            withCredentials: true,
+          });
+          setTasks(response.data.tasks?.filter(task => task.isTrashed === true) || []);
+        } catch (error) {
+          console.error("Error fetching trashed tasks:", error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        setLoading(false);
+      }
+    };
+
     verifyAuth();
-  }, [navigate]);
+    fetchTasks();
+  }, [navigate, user?._id]);
 
   const deleteAllClick = () => {
     setType("deleteAll");
@@ -105,7 +128,7 @@ const Trash = () => {
         </div>
       </td>
       <td className="py-2 capitalize text-center md:text-start">{item?.stage}</td>
-      <td className="py-2 text-sm">{new Date(item?.date).toDateString()}</td>
+      <td className="py-2 text-sm">{new Date(item?.updatedAt).toDateString()}</td>
       <td className="py-2 flex gap-1 justify-end">
         <Button
           icon={<MdOutlineRestore className="text-xl text-gray-500" />}
@@ -118,6 +141,14 @@ const Trash = () => {
       </td>
     </tr>
   );
+
+  if (loading) {
+    return (
+      <div className="py-10">
+        <Loading /> {/* Display loading indicator */}
+      </div>
+    );
+  }
 
   return (
     <>
