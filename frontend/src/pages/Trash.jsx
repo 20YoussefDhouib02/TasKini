@@ -13,7 +13,7 @@ import { PRIOTITYSTYELS, TASK_TYPE } from "../utils";
 import ConfirmatioDialog from "../components/Dialogs";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import Loading from "../components/Loader"; // Ensure this is imported
+import Loading from "../components/Loader";
 import { useSelector } from "react-redux";
 
 const checkAuth = async () => {
@@ -36,7 +36,7 @@ const ICONS = {
 
 const Trash = () => {
   const navigate = useNavigate();
-  const { user } = useSelector((state) => state.auth); // Get user from Redux store
+  const { user } = useSelector((state) => state.auth);
   const [openDialog, setOpenDialog] = useState(false);
   const [msg, setMsg] = useState(null);
   const [type, setType] = useState("delete");
@@ -48,7 +48,7 @@ const Trash = () => {
     const verifyAuth = async () => {
       const isAuthenticated = await checkAuth();
       if (!isAuthenticated) {
-        navigate("/log-in"); // Redirect to login page if not authenticated
+        navigate("/log-in");
       }
     };
 
@@ -56,7 +56,7 @@ const Trash = () => {
       if (user?._id) {
         try {
           const response = await axios.get("http://localhost:8800/api/task/agenda", {
-            params: { userId: user._id}, // Filter for trashed tasks and by userId
+            params: { userId: user._id },
             withCredentials: true,
           });
           setTasks(response.data.tasks?.filter(task => task.isTrashed === true) || []);
@@ -74,6 +74,89 @@ const Trash = () => {
     fetchTasks();
   }, [navigate, user?._id]);
 
+  const deleteHandler = async () => {
+    try {
+      console.log(user._id)
+      const response = await axios.post('http://localhost:8800/api/task/delete', {
+        id: selected,
+        userId: user._id,
+        actionType: "delete",
+      });
+      if (response.status === 200) {
+        alert('Task deleted successfully');
+        setTasks(tasks.filter(task => task._id !== selected)); // Update UI after deletion
+      } else {
+        console.error("Unexpected response:", response);
+        alert('Failed to delete task. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error.message);
+      alert('Failed to delete task');
+    }
+  };
+
+  const restoreHandler = async () => {
+    try {
+      const response = await axios.post('http://localhost:8800/api/task/delete', {
+        id: selected,
+        userId: user._id,
+        actionType: "restore",
+      });
+      if (response.status === 200) {
+        alert('Task restored successfully');
+        setTasks(tasks.filter(task => task._id !== selected)); // Update UI after restoration
+      } else {
+        console.error("Unexpected response:", response);
+        alert('Failed to restore task. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error restoring task:", error.message);
+      alert('Failed to restore task');
+    }
+  };
+
+  const deleteAllHandler = async () => {
+    try {
+      const response = await axios.post('http://localhost:8800/api/task/delete', {
+        id: selected,
+        userId: user._id,
+        actionType: "deleteAll",
+      });
+      if (response.status === 200) {
+        alert('All tasks deleted successfully');
+        window.location.reload();
+        setTasks([]); // Clear the tasks UI
+      } else {
+        console.error("Unexpected response:", response);
+        alert('Failed to delete all tasks. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error deleting all tasks:", error.message);
+      alert('Failed to delete all tasks');
+    }
+  };
+
+  const restoreAllHandler = async () => {
+    try {
+      const response = await axios.post('http://localhost:8800/api/task/delete', {
+        userId: user._id,
+        actionType: "restoreAll",
+      });
+  
+      if (response.status === 200) {
+        alert('All tasks restored successfully');
+        setTasks(tasks.filter(task => !task.isTrashed)); // Remove trashed tasks from the current list
+      } else {
+        console.error("Unexpected response:", response);
+        alert('Failed to restore all tasks. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error restoring all tasks:", error.message);
+      alert('Failed to restore all tasks');
+    }
+  };
+  
+
   const deleteAllClick = () => {
     setType("deleteAll");
     setMsg("Do you want to permanently delete all items?");
@@ -89,13 +172,14 @@ const Trash = () => {
   const deleteClick = (id) => {
     setType("delete");
     setSelected(id);
+    setMsg("Do you want to permanently delete this item?");
     setOpenDialog(true);
   };
 
   const restoreClick = (id) => {
     setSelected(id);
     setType("restore");
-    setMsg("Do you want to restore the selected item?");
+    setMsg("Do you want to restore this item?");
     setOpenDialog(true);
   };
 
@@ -145,7 +229,7 @@ const Trash = () => {
   if (loading) {
     return (
       <div className="py-10">
-        <Loading /> {/* Display loading indicator */}
+        <Loading />
       </div>
     );
   }
@@ -190,7 +274,7 @@ const Trash = () => {
         setMsg={setMsg}
         type={type}
         setType={setType}
-        onClick={() => console.log("Handle action")}
+        onClick={type === "delete" ? deleteHandler : type === "restore" ? restoreHandler : type === "deleteAll" ? deleteAllHandler : restoreAllHandler}
       />
     </>
   );

@@ -13,6 +13,7 @@ import BoardView from "../components/BoardView";
 import Table from "../components/task/Table";
 import AddTask from "../components/task/AddTask";
 import axios from "axios";
+import Chatbot from "../components/ChatBot";
 
 // Check if the user is authenticated
 const checkAuth = async () => {
@@ -134,10 +135,15 @@ const Tasks = () => {
 
         {selected !== 1 ? (
           <BoardView tasks={filteredTasks} />
+          
         ) : (
           <div className="w-full">
             <Table tasks={filteredTasks} />
+           {/*<Chatbot/>*/}
+           <Chatbot/>
+            
           </div>
+          
         )}
       </Tabs>
 

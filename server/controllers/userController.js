@@ -108,7 +108,7 @@ export const getTeamList = async (req, res) => {
 
 export const getNotificationsList = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
     const objectId = new mongoose.Types.ObjectId(userId);
     const notice = await Notice.find({
       UserId: objectId,

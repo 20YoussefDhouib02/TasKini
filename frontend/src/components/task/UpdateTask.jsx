@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import ModalWrapper from "../ModalWrapper";
 import { Dialog } from "@headlessui/react";
 import Textbox from "../Textbox";
@@ -6,60 +6,68 @@ import { useForm } from "react-hook-form";
 import SelectList from "../SelectList";
 import { BiImages } from "react-icons/bi";
 import Button from "../Button";
-import axios from "axios"; // Import axios for HTTP requests
+import axios from "axios";
 import { useSelector } from "react-redux";
 
 const LISTS = ["TODO", "IN PROGRESS", "COMPLETED"];
-const PRIORIRY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
+const PRIORITY = ["HIGH", "MEDIUM", "NORMAL", "LOW"];
 
-const AddTask = ({ open, setOpen }) => {
+const UpdateTask = ({ open, setOpen, task }) => {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm();
-  const [stage, setStage] = useState(LISTS[0]);
-  const [priority, setPriority] = useState(PRIORIRY[2]);
+  const [stage, setStage] = useState(task.stage || LISTS[0]);
+  const [priority, setPriority] = useState(task.priority || PRIORITY[2]);
   const [assets, setAssets] = useState([]);
   const [uploading, setUploading] = useState(false);
   const { user } = useSelector((state) => state.auth);
 
+  // Populate form fields with existing task data when the component mounts
+  useEffect(() => {
+    if (task) {
+      setValue("title", task.title);
+      setValue("startAt", new Date(task.startAt).toISOString().slice(0, 16));
+      setValue("endAt", new Date(task.endAt).toISOString().slice(0, 16));
+    }
+  }, [task, setValue]);
+
   const submitHandler = async (data) => {
     try {
-      const userId = user._id; // Replace with actual user ID from your state or context
+      const userId = user._id;
       const formattedStartAt = new Date(data.startAt).toISOString();
       const formattedEndAt = new Date(data.endAt).toISOString();
 
       const payload = {
-        ...data,
-        userId,
+        id: task._id, // Task ID for updating
+        title: data.title,
         startAt: formattedStartAt,
         endAt: formattedEndAt,
-        stage: stage.toLowerCase(), // Ensure stage is in lowercase for consistency
-        priority: priority.toLowerCase(), // Ensure priority is in lowercase for consistency
-        assets: Array.from(assets).map((file) => file.name), // Use the file names as asset names
+        stage: stage.toLowerCase(), // Ensure stage is in lowercase
+        priority: priority.toLowerCase(), // Ensure priority is in lowercase
+        assets: Array.from(assets).map((file) => file.name), // Get file names from assets
       };
 
-      // Make the API call to add a new task
       setUploading(true);
-      const response = await axios.post("http://localhost:8800/api/task/create", payload, {
+      // Send request with payload in the body
+      const response = await axios.put(`http://localhost:8800/api/task/update`, payload, {
         headers: {
           "Content-Type": "application/json",
         },
       });
 
       if (response.status === 200) {
-        alert("Task added successfully!");
-        window.location.reload();
+        alert("Task updated successfully!");
         setOpen(false);
-        // Optionally, reset the form or redirect the user
       } else {
         console.error("Unexpected response:", response);
-        alert("Failed to add task. Please try again.");
+        alert("Failed to update task. Please try again.");
       }
     } catch (error) {
-      console.error("Error adding task:", error);
-      alert("Failed to add task. Please try again.");
+      console.error("Error updating task:", error);
+      alert("Failed to update task. Please try again.");
     } finally {
       setUploading(false);
     }
@@ -73,7 +81,7 @@ const AddTask = ({ open, setOpen }) => {
     <ModalWrapper open={open} setOpen={setOpen}>
       <form onSubmit={handleSubmit(submitHandler)}>
         <Dialog.Title as="h2" className="text-base font-bold leading-6 text-gray-900 mb-4">
-          ADD TASK
+          UPDATE TASK
         </Dialog.Title>
 
         <div className="mt-2 flex flex-col gap-6">
@@ -109,7 +117,7 @@ const AddTask = ({ open, setOpen }) => {
           <div className="flex gap-4">
             <SelectList
               label="Priority Level"
-              lists={PRIORIRY}
+              lists={PRIORITY}
               selected={priority}
               setSelected={setPriority}
             />
@@ -167,4 +175,4 @@ const AddTask = ({ open, setOpen }) => {
   );
 };
 
-export default AddTask;
+export default UpdateTask;

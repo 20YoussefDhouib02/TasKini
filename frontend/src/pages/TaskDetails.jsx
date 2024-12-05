@@ -1,6 +1,6 @@
 import clsx from "clsx";
 import moment from "moment";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaBug, FaTasks, FaThumbsUp, FaUser } from "react-icons/fa";
 import { GrInProgress } from "react-icons/gr";
 import {
@@ -13,10 +13,10 @@ import {
 } from "react-icons/md";
 import { RxActivityLog } from "react-icons/rx";
 import { useParams } from "react-router-dom";
+import axios from "axios";
 import { toast } from "sonner";
-import { tasks } from "../assets/data";
-import Tabs from "../components/Tabs";
 import { PRIOTITYSTYELS, TASK_TYPE, getInitials } from "../utils";
+import Tabs from "../components/Tabs";
 import Loading from "../components/Loader";
 import Button from "../components/Button";
 
@@ -47,7 +47,7 @@ const TABS = [
 const TASKTYPEICON = {
   commented: (
     <div className='w-10 h-10 rounded-full bg-gray-500 flex items-center justify-center text-white'>
-      <MdOutlineMessage />,
+      <MdOutlineMessage />
     </div>
   ),
   started: (
@@ -88,9 +88,34 @@ const act_types = [
 
 const TaskDetails = () => {
   const { id } = useParams();
-
   const [selected, setSelected] = useState(0);
-  const task = tasks[3];
+  const [task, setTask] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTask = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8800/api/task/getTask`, {
+          params: { id },
+        });
+        console.log(response);
+        setTask(response.data.task); // Ensure the response object has a 'data' key or adjust as necessary.
+      } catch (error) {
+        console.error("Error fetching task:", error);
+        toast.error("Failed to load task details");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTask();
+  }, [id]);
+
+  if (loading) return <Loading />;
+
+  if (!task) {
+    return <div>Task not found</div>;
+  }
 
   return (
     <div className='w-full flex flex-col gap-3 mb-4 overflow-y-hidden'>
@@ -114,7 +139,7 @@ const TaskDetails = () => {
                     <span className='uppercase'>{task?.priority} Priority</span>
                   </div>
 
-                  <div className={clsx("flex items-center gap-2")}>
+                  <div className='flex items-center gap-2'>
                     <div
                       className={clsx(
                         "w-4 h-4 rounded-full",
@@ -126,7 +151,7 @@ const TaskDetails = () => {
                 </div>
 
                 <p className='text-gray-500'>
-                  Created At: {new Date(task?.date).toDateString()}
+                  Created At: {new Date(task?.createdAt).toDateString()}
                 </p>
 
                 <div className='flex items-center gap-8 p-4 border-y border-gray-200'>
@@ -143,21 +168,14 @@ const TaskDetails = () => {
                   </div>
                 </div>
 
-                <div className='space-y-4 py-6'>
-                  <p className='text-gray-600 font-semibold test-sm'>
-                    TASK TEAM
-                  </p>
+                
                   <div className='space-y-3'>
                     {task?.team?.map((m, index) => (
                       <div
                         key={index}
                         className='flex gap-4 py-2 items-center border-t border-gray-200'
                       >
-                        <div
-                          className={
-                            "w-10 h-10 rounded-full text-white flex items-center justify-center text-sm -mr-1 bg-blue-600"
-                          }
-                        >
+                        <div className='w-10 h-10 rounded-full text-white flex items-center justify-center text-sm -mr-1 bg-blue-600'>
                           <span className='text-center'>
                             {getInitials(m?.name)}
                           </span>
@@ -170,12 +188,10 @@ const TaskDetails = () => {
                       </div>
                     ))}
                   </div>
-                </div>
+                
 
                 <div className='space-y-4 py-6'>
-                  <p className='text-gray-500 font-semibold text-sm'>
-                    SUB-TASKS
-                  </p>
+                  <p className='text-gray-500 font-semibold text-sm'>SUB-TASKS</p>
                   <div className='space-y-8'>
                     {task?.subTasks?.map((el, index) => (
                       <div key={index} className='flex gap-3'>
@@ -186,7 +202,7 @@ const TaskDetails = () => {
                         <div className='space-y-1'>
                           <div className='flex gap-2 items-center'>
                             <span className='text-sm text-gray-500'>
-                              {new Date(el?.date).toDateString()}
+                              {new Date(el?.endAt).toDateString()}
                             </span>
 
                             <span className='px-2 py-0.5 text-center text-sm rounded-full bg-violet-100 text-violet-700 font-semibold'>
@@ -210,8 +226,8 @@ const TaskDetails = () => {
                     <img
                       key={index}
                       src={el}
-                      alt={task?.title}
-                      className='w-full rounded h-28 md:h-36 2xl:h-52 cursor-pointer transition-all duration-700 hover:scale-125 hover:z-50'
+                      alt={el}
+                      className='w-full h-44 object-cover rounded-lg'
                     />
                   ))}
                 </div>
@@ -219,98 +235,70 @@ const TaskDetails = () => {
             </div>
           </>
         ) : (
-          <>
-            <Activities activity={task?.activities} id={id} />
-          </>
+          <Activities task={task} />
         )}
       </Tabs>
     </div>
   );
 };
 
-const Activities = ({ activity, id }) => {
-  const [selected, setSelected] = useState(act_types[0]);
-  const [text, setText] = useState("");
-  const isLoading = false;
+const Activities = ({ task }) => {
+  const [actType, setActType] = useState("Started");
+  const [description, setDescription] = useState("");
 
-  const handleSubmit = async () => {};
-
-  const Card = ({ item }) => {
-    return (
-      <div className='flex space-x-4'>
-        <div className='flex flex-col items-center flex-shrink-0'>
-          <div className='w-10 h-10 flex items-center justify-center'>
-            {TASKTYPEICON[item?.type]}
-          </div>
-          <div className='w-full flex items-center'>
-            <div className='w-0.5 bg-gray-300 h-full'></div>
-          </div>
-        </div>
-
-        <div className='flex flex-col gap-y-1 mb-8'>
-          <p className='font-semibold'>{item?.by?.name}</p>
-          <div className='text-gray-500 space-y-2'>
-            <span className='capitalize'>{item?.type}</span>
-            <span className='text-sm'>{moment(item?.date).fromNow()}</span>
-          </div>
-          <div className='text-gray-700'>{item?.activity}</div>
-        </div>
-      </div>
-    );
+  const handleSubmit = () => {
+    // Mock activity submission logic
+    toast.success("Activity added!");
+    setDescription("");
   };
 
   return (
-    <div className='w-full flex gap-10 2xl:gap-20 min-h-screen px-10 py-8 bg-white shadow rounded-md justify-between overflow-y-auto'>
-      <div className='w-full md:w-1/2'>
-        <h4 className='text-gray-600 font-semibold text-lg mb-5'>Activities</h4>
-
-        <div className='w-full'>
-          {activity?.map((el, index) => (
-            <Card
-              key={index}
-              item={el}
-              isConnected={index < activity.length - 1}
-            />
-          ))}
+    <div className='p-8 bg-white shadow-md'>
+      <h2 className='text-lg font-semibold mb-4'>Activity Timeline</h2>
+      <div className='mb-6'>
+        <p className='font-semibold'>Add Activity</p>
+        <div className='flex items-center gap-4'>
+          <select
+            value={actType}
+            onChange={(e) => setActType(e.target.value)}
+            className='border rounded-md p-2'
+          >
+            {act_types.map((type) => (
+              <option key={type} value={type}>
+                {type}
+              </option>
+            ))}
+          </select>
+          <input
+            type='text'
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder='Add activity details...'
+            className='border rounded-md p-2 flex-1'
+          />
+          <Button onClick={handleSubmit} text='Add' />
         </div>
       </div>
 
-      <div className='w-full md:w-1/3'>
-        <h4 className='text-gray-600 font-semibold text-lg mb-5'>
-          Add Activity
-        </h4>
-        <div className='w-full flex flex-wrap gap-5'>
-          {act_types.map((item, index) => (
-            <div key={item} className='flex gap-2 items-center'>
-              <input
-                type='checkbox'
-                className='w-4 h-4'
-                checked={selected === item ? true : false}
-                onChange={(e) => setSelected(item)}
-              />
-              <p>{item}</p>
+      <div>
+        <p className='font-semibold'>Past Activities</p>
+        {task?.activities?.map((activity, index) => (
+          <div
+            key={index}
+            className='flex items-center justify-between p-2 border-b border-gray-200'
+          >
+            <div className='flex items-center'>
+              {TASKTYPEICON[activity.type]}
+              <p className='ml-2'>{activity.description}</p>
             </div>
-          ))}
-          <textarea
-            rows={10}
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder='Type ......'
-            className='bg-white w-full mt-10 border border-gray-300 outline-none p-4 rounded-md focus:ring-2 ring-blue-500'
-          ></textarea>
-          {isLoading ? (
-            <Loading />
-          ) : (
-            <Button
-              type='button'
-              label='Submit'
-              onClick={handleSubmit}
-              className='bg-blue-600 text-white rounded'
-            />
-          )}
-        </div>
+            <span className='text-gray-500'>
+              {moment(activity.timestamp).fromNow()}
+            </span>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
+
 export default TaskDetails;
