@@ -13,6 +13,8 @@ import { FaList } from "react-icons/fa";
 import UserInfo from "../UserInfo";
 import Button from "../Button";
 import ConfirmatioDialog from "../Dialogs";
+import axios from "axios";
+import UpdateTask from "./UpdateTask"; // Import the UpdateTask modal
 
 const ICONS = {
   high: <MdKeyboardDoubleArrowUp />,
@@ -23,17 +25,41 @@ const ICONS = {
 const Table = ({ tasks }) => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selected, setSelected] = useState(null);
+  const [openEditModal, setOpenEditModal] = useState(false);
+  const [editTask, setEditTask] = useState(null);
+
+  const deleteHandler = async () => {
+    try {
+      const response = await axios.post('http://localhost:8800/api/task/delete', {
+        id: selected,
+        actionType: "delete",
+      });
+      if (response.status === 200) {
+        toast.success('Task deleted successfully');
+        window.location.reload();
+      } else {
+        console.error("Unexpected response:", response);
+        toast.error('Failed to delete task. Please try again.');
+      }
+    } catch (error) {
+      console.error("Error deleting task:", error.message);
+      toast.error('Failed to delete task');
+    }
+  };
+
+  const editHandler = (task) => {
+    setEditTask(task);
+    setOpenEditModal(true);
+  };
 
   const deleteClicks = (id) => {
     setSelected(id);
     setOpenDialog(true);
   };
 
-  const deleteHandler = () => {};
-
   const TableHeader = () => (
     <thead className='w-full border-b border-gray-300'>
-      <tr className='w-full text-black  text-left'>
+      <tr className='w-full text-black text-left'>
         <th className='py-2'>Task Title</th>
         <th className='py-2'>Priority</th>
         <th className='py-2 line-clamp-1'>Created At</th>
@@ -46,12 +72,8 @@ const Table = ({ tasks }) => {
     <tr className='border-b border-gray-200 text-gray-600 hover:bg-gray-300/10'>
       <td className='py-2'>
         <div className='flex items-center gap-2'>
-          <div
-            className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage])}
-          />
-          <p className='w-full line-clamp-2 text-base text-black'>
-            {task?.title}
-          </p>
+          <div className={clsx("w-4 h-4 rounded-full", TASK_TYPE[task.stage])} />
+          <p className='w-full line-clamp-2 text-base text-black'>{task?.title}</p>
         </div>
       </td>
 
@@ -60,16 +82,12 @@ const Table = ({ tasks }) => {
           <span className={clsx("text-lg", PRIOTITYSTYELS[task?.priority])}>
             {ICONS[task?.priority]}
           </span>
-          <span className='capitalize line-clamp-1'>
-            {task?.priority} Priority
-          </span>
+          <span className='capitalize line-clamp-1'>{task?.priority} Priority</span>
         </div>
       </td>
 
       <td className='py-2'>
-        <span className='text-sm text-gray-600'>
-          {formatDate(new Date(task?.createdAt))}
-        </span>
+        <span className='text-sm text-gray-600'>{formatDate(new Date(task?.createdAt))}</span>
       </td>
 
       <td className='py-2'>
@@ -110,6 +128,7 @@ const Table = ({ tasks }) => {
           className='text-blue-600 hover:text-blue-500 sm:px-0 text-sm md:text-base'
           label='Edit'
           type='button'
+          onClick={() => editHandler(task)}
         />
 
         <Button
@@ -121,11 +140,12 @@ const Table = ({ tasks }) => {
       </td>
     </tr>
   );
+
   return (
     <>
-      <div className='bg-white  px-2 md:px-4 pt-4 pb-9 shadow-md rounded'>
+      <div className='bg-white px-2 md:px-4 pt-4 pb-9 shadow-md rounded'>
         <div className='overflow-x-auto'>
-          <table className='w-full '>
+          <table className='w-full'>
             <TableHeader />
             <tbody>
               {tasks.map((task, index) => (
@@ -136,12 +156,21 @@ const Table = ({ tasks }) => {
         </div>
       </div>
 
-      {/* TODO */}
+      {/* Confirmation dialog for deleting a task */}
       <ConfirmatioDialog
         open={openDialog}
         setOpen={setOpenDialog}
         onClick={deleteHandler}
       />
+
+      {/* UpdateTask modal for editing a task */}
+      {editTask && (
+        <UpdateTask
+          open={openEditModal}
+          setOpen={setOpenEditModal}
+          task={editTask}
+        />
+      )}
     </>
   );
 };

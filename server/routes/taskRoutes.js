@@ -13,28 +13,29 @@ import {
   getstatsfordashboard,
   getTasksAssignedByUserId,
 } from "../controllers/taskController.js";
+import chatbot from "../controllers/geminiController.js"
 import { isAdminRoute, protectRoute } from "../middlewares/authMiddlewave.js";
 
 const router = express.Router();
 
 router.post("/create", createTask);
-router.post("/duplicate/:id", protectRoute, isAdminRoute, duplicateTask);
+router.post("/duplicate", duplicateTask);
 router.post("/activity/:id", protectRoute, postTaskActivity);
+router.post("/prompt-post",chatbot);
+
 router.get("/dashstats",getstatsfordashboard);
 router.get("/agenda",getTasksAssignedByUserId)
 router.get("/dashboard", protectRoute, dashboardStatistics);
 router.get("/", protectRoute, getTasks);
-router.get("/:id", protectRoute, getTask);
+router.get("/getTask",  getTask);
 
 
 router.put("/create-subtask",  createSubTask);
-router.put("/update/:id", protectRoute, isAdminRoute, updateTask);
+router.put("/update",  updateTask);
 router.put("/:id", protectRoute, isAdminRoute, trashTask);
 
-router.delete(
-  "/delete-restore/:id?",
-  protectRoute,
-  isAdminRoute,
+router.post(
+  "/delete",
   deleteRestoreTask
 );
 

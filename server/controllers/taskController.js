@@ -3,6 +3,9 @@ import Task from "../models/task.js";
 import User from "../models/user.js";
 import mongoose from 'mongoose';
 
+
+
+
 export const createTask = async (req, res) => {
   try {
     const { userId, title, startAt, endAt, priority, stage, assets } = req.body;
@@ -48,53 +51,61 @@ export const createTask = async (req, res) => {
     return res.status(500).json({ status: false, message: error.message });
   }
 };
-
-
 export const duplicateTask = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
 
+    // Find the original task
     const task = await Task.findById(id);
 
-    const newTask = await Task.create({
-      ...task,
-      title: task.title + " - Duplicate",
-    });
-
-    newTask.team = task.team;
-    newTask.subTasks = task.subTasks;
-    newTask.assets = task.assets;
-    newTask.priority = task.priority;
-    newTask.stage = task.stage;
-
-    await newTask.save();
-
-    //alert users of the task
-    let text = "New task has been assigned to you";
-    if (task.team.length > 1) {
-      text = text + ` and ${task.team.length - 1} others.`;
+    if (!task) {
+      return res.status(404).json({ status: false, message: "Task not found." });
     }
 
-    text =
-      text +
-      ` The task priority is set a ${
-        task.priority
-      } priority, so check and act accordingly. The task date is ${task.date.toDateString()}. Thank you!!!`;
-
-    await Notice.create({
-      team: task.team,
-      text,
-      task: newTask._id,
+    // Create a new task by copying the relevant fields from the original task
+    const newTask = new Task({
+      userId: task.userId,
+      title: task.title + " - Duplicate", // Append " - Duplicate" to the title
+      startAt: task.startAt,
+      endAt: task.endAt,
+      priority: task.priority,
+      stage: task.stage,
+      assets: task.assets,
+      activities: [
+        {
+          type: "assigned",
+          activity: `A duplicate task titled "${task.title}" has been created with a ${task.priority} priority, starting at ${new Date(
+            task.startAt
+          ).toLocaleString()} and ending at ${new Date(task.endAt).toLocaleString()}.`,
+          by: task.userId,
+        },
+      ],
     });
 
-    res
-      .status(200)
-      .json({ status: true, message: "Task duplicated successfully." });
+    // Save the new task to the database
+    await newTask.save();
+
+    // Create a notification text
+    const text = `A duplicate task titled "${newTask.title}" has been created with a ${newTask.priority} priority. Please check and act accordingly. The task starts at ${new Date(
+      newTask.startAt
+    ).toDateString()} and ends at ${new Date(newTask.endAt).toDateString()}.`;
+
+    // Create a notification for the user who created the task
+    await Notice.create({
+      UserId: [task.userId], // Notify the original task creator
+      text: text,
+      task: newTask._id,
+      notiType: "alert",
+      isRead: [],
+    });
+
+    res.status(200).json({ status: true, message: "Task duplicated successfully." });
   } catch (error) {
-    console.log(error);
+    console.error("Error duplicating task:", error);
     return res.status(400).json({ status: false, message: error.message });
   }
 };
+
 
 export const postTaskActivity = async (req, res) => {
   try {
@@ -228,17 +239,10 @@ export const getTasks = async (req, res) => {
 
 export const getTask = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.query;
 
     const task = await Task.findById(id)
-      .populate({
-        path: "team",
-        select: "name title role email",
-      })
-      .populate({
-        path: "activities.by",
-        select: "name",
-      });
+      
 
     res.status(200).json({
       status: true,
@@ -252,13 +256,14 @@ export const getTask = async (req, res) => {
 
 export const createSubTask = async (req, res) => {
   try {
-    const { title, tag, date } = req.body;
+    const { title, tag, startAt,endAt } = req.body;
 
     const { id } = req.body;
 
     const newSubTask = {
       title,
-      date,
+      startAt,
+      endAt,
       tag,
     };
 
@@ -279,23 +284,23 @@ export const createSubTask = async (req, res) => {
 
 export const updateTask = async (req, res) => {
   try {
-    const { id } = req.params;
-    const { title, date, team, stage, priority, assets } = req.body;
+    const { id } = req.body;
+    const { title, startAt, endAt,  stage, priority, assets } = req.body;
 
     const task = await Task.findById(id);
 
     task.title = title;
-    task.date = date;
+    task.startAt = startAt;
+    task.endAt=endAt;
     task.priority = priority.toLowerCase();
     task.assets = assets;
     task.stage = stage.toLowerCase();
-    task.team = team;
 
     await task.save();
 
     res
       .status(200)
-      .json({ status: true, message: "Task duplicated successfully." });
+      .json({ status: true, message: "Task updated successfully." });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -315,37 +320,6 @@ export const trashTask = async (req, res) => {
     res.status(200).json({
       status: true,
       message: `Task trashed successfully.`,
-    });
-  } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
-  }
-};
-
-export const deleteRestoreTask = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { actionType } = req.query;
-
-    if (actionType === "delete") {
-      await Task.findByIdAndDelete(id);
-    } else if (actionType === "deleteAll") {
-      await Task.deleteMany({ isTrashed: true });
-    } else if (actionType === "restore") {
-      const resp = await Task.findById(id);
-
-      resp.isTrashed = false;
-      resp.save();
-    } else if (actionType === "restoreAll") {
-      await Task.updateMany(
-        { isTrashed: true },
-        { $set: { isTrashed: false } }
-      );
-    }
-
-    res.status(200).json({
-      status: true,
-      message: `Operation performed successfully.`,
     });
   } catch (error) {
     console.log(error);
@@ -387,6 +361,7 @@ export const getstatsfordashboard= async (req, res) => {
     res.status(500).json({ status: false, message: "An error occurred while retrieving task stats." });
   }
 };
+
 export const getTasksAssignedByUserId = async (req, res) => {
   try {
     const { userId } = req.query; // Use query parameters
@@ -421,3 +396,49 @@ export const getTasksAssignedByUserId = async (req, res) => {
     });
   }
 };
+export const deleteRestoreTask = async (req, res) => {
+  try {
+    const { id, actionType ,userId} = req.body;
+    console.log(actionType);
+    // Ensure actionType is valid
+    const validActionTypes = ["delete", "deleteAll", "restore", "restoreAll"];
+    if (!validActionTypes.includes(actionType)) {
+      return res.status(400).json({ status: false, message: "Invalid action type" });
+    }
+
+    if (actionType === "delete") {
+      const task = await Task.findById(id);
+      if (!task) {
+        return res.status(404).json({ status: false, message: "Task not found" });
+      }
+      task.isTrashed = true; 
+      await task.save();
+    } else if (actionType === "deleteAll") {
+      await Task.deleteMany({ userId: new mongoose.Types.ObjectId(userId), isTrashed: true });
+      
+    } else if (actionType === "restore") {
+      const task = await Task.findById(id);
+      if (!task) {
+        return res.status(404).json({ status: false, message: "Task not found" });
+      }
+      task.isTrashed = false;
+      await task.save();
+    } else if (actionType === "restoreAll"){
+      await Task.updateMany(
+        { userId: new mongoose.Types.ObjectId(userId), isTrashed: true },
+        { $set: { isTrashed: false } }
+      );
+     
+    } 
+    
+
+    res.status(200).json({
+      status: true,
+      message: `Operation performed successfully.`,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.status(400).json({ status: false, message: error.message });
+  }
+};
+
