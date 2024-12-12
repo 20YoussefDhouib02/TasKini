@@ -63,7 +63,7 @@ const Sidebar = () => {
           <p className="bg-grey-600 p-2 rounded-full">
             <FaCalendarAlt />
           </p>
-          <span className="text-2xl font-bold text-black">My To-Do</span>
+          <span className="text-2xl font-bold text-black">TasKini</span>
         </h1>
 
         <div className="flex-1 flex flex-col gap-y-5 py-8">

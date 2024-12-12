@@ -204,7 +204,7 @@ export const changeUserPassword = async (req, res) => {
         message: `Password changed successfully.`,
       });
     } else {
-      res.status(404).json({ status: false, message: "User not found" });
+      res.status(404).json({ status: false, message: "Wrong password" });
     }
   } catch (error) {
     console.log(error);
