@@ -152,7 +152,6 @@ const Register = () => {
                 {...register("role", { required: "Role is required!" })}
               >
                 <option value="">Select a role</option>
-                <option value="admin">Admin</option>
                 <option value="user">User</option>
               </select>
               {errors.role && (
