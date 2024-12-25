@@ -15,14 +15,24 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
+const allowedOrigins = [
+  "http://localhost:3000", // Local development
+  "https://taskini.vercel.app", // Production frontend
+];
+
 app.use(
   cors({
-    origin: "*", 
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Domain Not allowed"));
+      }
+    },
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
 );
-
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
