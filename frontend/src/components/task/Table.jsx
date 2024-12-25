@@ -30,7 +30,7 @@ const Table = ({ tasks }) => {
 
   const deleteHandler = async () => {
     try {
-      const response = await axios.post('http://localhost:8800/api/task/delete', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/delete`, {
         id: selected,
         actionType: "delete",
       });

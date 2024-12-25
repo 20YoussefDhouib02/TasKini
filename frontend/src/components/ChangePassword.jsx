@@ -24,7 +24,7 @@ const ChangePasswordDialog = ({ open, setOpen }) => {
 
     try {
       const response = await axios.put(
-        "http://localhost:8800/api/user/change-password", // Replace with your actual API endpoint
+        `${import.meta.env.VITE_APP_BASE_URL}/api/user/change-password`,
         {
           userId: user._id, // Use logged-in user's ID
           password: data.currentPassword,

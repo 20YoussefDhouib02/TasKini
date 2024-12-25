@@ -12,7 +12,7 @@ import { useNavigate } from "react-router-dom";
 
 const checkAuth = async () => {
   try {
-    const response = await axios.get("http://localhost:8800/api/user/check-auth", {
+    const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/check-auth`, {
       withCredentials: true,
     });
     return response.data.status === true;

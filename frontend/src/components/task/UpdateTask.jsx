@@ -52,7 +52,7 @@ const UpdateTask = ({ open, setOpen, task }) => {
 
       setUploading(true);
       // Send request with payload in the body
-      const response = await axios.put(`http://localhost:8800/api/task/update`, payload, {
+      const response = await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/task/update`, payload, {
         headers: {
           "Content-Type": "application/json",
         },

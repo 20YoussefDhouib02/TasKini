@@ -20,7 +20,7 @@ const UserAvatar = () => {
   const logoutHandler = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:8800/api/user/logout",
+        `${import.meta.env.VITE_APP_BASE_URL}/api/user/logout`,
         {},
         {
           withCredentials: true,

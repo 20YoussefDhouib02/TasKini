@@ -22,7 +22,7 @@ const Login = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8800/api/user/login", // Replace with your actual backend URL
+        `${import.meta.env.VITE_APP_BASE_URL}/api/user/login`, // Replace with your actual backend URL
         { email, password },
         { withCredentials: true }
       );

@@ -20,7 +20,7 @@ const Register = () => {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:8800/api/user/register", // Replace with your backend registration endpoint
+        `${import.meta.env.VITE_APP_BASE_URL}/api/user/register`, // Replace with your backend registration endpoint
         { name, email, password, role, title }
       );
 

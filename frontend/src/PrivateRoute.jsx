@@ -5,7 +5,7 @@ import axios from "axios";
 // Check authentication function using the existing check-auth endpoint
 const checkAuth = async () => {
   try {
-    const response = await axios.get("http://localhost:8800/api/user/check-auth", {
+    const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/check-auth`, {
       withCredentials: true, // Sends cookies with the request
     });
 

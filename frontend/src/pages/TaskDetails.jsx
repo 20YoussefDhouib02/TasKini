@@ -95,7 +95,7 @@ const TaskDetails = () => {
   useEffect(() => {
     const fetchTask = async () => {
       try {
-        const response = await axios.get(`http://localhost:8800/api/task/getTask`, {
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/task/getTask`, {
           params: { id },
         });
         console.log(response);

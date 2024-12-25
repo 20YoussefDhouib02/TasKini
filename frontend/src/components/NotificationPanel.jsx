@@ -28,7 +28,7 @@ const NotificationPanel = () => {
     const fetchNotifications = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:8800/api/user/notifications`,
+          `${import.meta.env.VITE_APP_BASE_URL}/api/user/notifications`,
           {
             params: { userId }, // Send the user ID as a query parameter
             withCredentials: true,

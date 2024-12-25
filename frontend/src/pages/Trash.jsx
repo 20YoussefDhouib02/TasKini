@@ -18,7 +18,7 @@ import { useSelector } from "react-redux";
 
 const checkAuth = async () => {
   try {
-    const response = await axios.get("http://localhost:8800/api/user/check-auth", {
+    const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/check-auth`, {
       withCredentials: true,
     });
     return response.data.status === true;
@@ -55,7 +55,7 @@ const Trash = () => {
     const fetchTasks = async () => {
       if (user?._id) {
         try {
-          const response = await axios.get("http://localhost:8800/api/task/agenda", {
+          const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/task/agenda`, {
             params: { userId: user._id },
             withCredentials: true,
           });
@@ -77,7 +77,7 @@ const Trash = () => {
   const deleteHandler = async () => {
     try {
       console.log(user._id)
-      const response = await axios.post('http://localhost:8800/api/task/delete', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/delete`, {
         id: selected,
         userId: user._id,
         actionType: "delete",
@@ -97,7 +97,7 @@ const Trash = () => {
 
   const restoreHandler = async () => {
     try {
-      const response = await axios.post('http://localhost:8800/api/task/delete', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/delete`, {
         id: selected,
         userId: user._id,
         actionType: "restore",
@@ -117,7 +117,7 @@ const Trash = () => {
 
   const deleteAllHandler = async () => {
     try {
-      const response = await axios.post('http://localhost:8800/api/task/delete', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/delete`, {
         id: selected,
         userId: user._id,
         actionType: "deleteAll",
@@ -138,7 +138,7 @@ const Trash = () => {
 
   const restoreAllHandler = async () => {
     try {
-      const response = await axios.post('http://localhost:8800/api/task/delete', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/delete`, {
         userId: user._id,
         actionType: "restoreAll",
       });

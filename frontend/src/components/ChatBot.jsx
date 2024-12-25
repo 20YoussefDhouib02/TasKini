@@ -19,7 +19,7 @@ const Chatbot = () => {
 
       try {
         // Send request to the chatbot API with prompt
-        const response = await axios.post("http://localhost:8800/api/task/prompt-post", {
+        const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/prompt-post`, {
           prompt: input, // Pass the input as prompt
         });
 

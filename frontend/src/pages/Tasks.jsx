@@ -18,7 +18,7 @@ import Chatbot from "../components/ChatBot";
 // Check if the user is authenticated
 const checkAuth = async () => {
   try {
-    const response = await axios.get("http://localhost:8800/api/user/check-auth", {
+    const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/check-auth`, {
       withCredentials: true,
     });
     return response.data.status === true;
@@ -45,7 +45,7 @@ const TABS = [
 const fetchTasksForUser = async (userId) => {
   try {
     const response = await axios.get(
-      "http://localhost:8800/api/task/agenda",
+      `${import.meta.env.VITE_APP_BASE_URL}/api/task/agenda`,
       {
         params: { userId },
         withCredentials: true,

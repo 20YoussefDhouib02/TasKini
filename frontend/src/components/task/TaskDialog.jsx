@@ -19,7 +19,7 @@ const TaskDialog = ({ task }) => {
 
   const deleteHandler = async () => {
     try {
-      const response = await axios.post('http://localhost:8800/api/task/delete', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/delete`, {
         id: task._id,
         actionType: "delete",
       });
@@ -47,7 +47,7 @@ const TaskDialog = ({ task }) => {
       };
 
       // Send a PUT request to the backend for duplicating the task
-      const response = await axios.post('http://localhost:8800/api/task/duplicate', payload, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/duplicate`, payload, {
         headers: {
           "Content-Type": "application/json",
         },

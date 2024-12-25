@@ -42,7 +42,7 @@ const AddTask = ({ open, setOpen }) => {
 
       // Make the API call to add a new task
       setUploading(true);
-      const response = await axios.post("http://localhost:8800/api/task/create", payload, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/task/create`, payload, {
         headers: {
           "Content-Type": "application/json",
         },

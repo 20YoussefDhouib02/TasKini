@@ -31,7 +31,7 @@ const AddSubTask = ({ open, setOpen, id }) => {
       // Make the API request to add a subtask
       setUploading(true);
       const response = await axios.put(
-        "http://localhost:8800/api/task/create-subtask",
+        `${import.meta.env.VITE_APP_BASE_URL}/api/task/create-subtask`,
         payload,
         {
           headers: { "Content-Type": "application/json" },

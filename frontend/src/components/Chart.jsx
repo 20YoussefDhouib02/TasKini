@@ -24,7 +24,7 @@ export const Chart = () => {
 
       try {
         const response = await axios.get(
-          `http://localhost:8800/api/task/agenda?userId=${user._id}`
+          `${import.meta.env.VITE_APP_BASE_URL}/api/task/agenda?userId=${user._id}`
         );
 
         if (response.status === 200) {

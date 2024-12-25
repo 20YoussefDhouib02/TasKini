@@ -17,7 +17,7 @@ import { summary } from "../assets/data";
 // Check if the user is authenticated
 const checkAuth = async () => {
   try {
-    const response = await axios.get("http://localhost:8800/api/user/check-auth", {
+    const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/check-auth`, {
       withCredentials: true,
     });
     return response.data.status === true;
@@ -29,7 +29,7 @@ const checkAuth = async () => {
 const getStatsForDashboard = async (userId) => {
   try {
     const response = await axios.get(
-      "http://localhost:8800/api/task/dashstats",
+      `${import.meta.env.VITE_APP_BASE_URL}/api/task/dashstats`,
       {
         params: { userId }, // Pass userId in query parameters
         withCredentials: true,
@@ -47,7 +47,7 @@ const getStatsForDashboard = async (userId) => {
 const getTasksForUser = async (userId) => {
   try {
     const response = await axios.get(
-      "http://localhost:8800/api/task/agenda",
+      `${import.meta.env.VITE_APP_BASE_URL}/api/task/agenda`,
       {
         params: { userId }, // Pass userId in query parameters
         withCredentials: true,
