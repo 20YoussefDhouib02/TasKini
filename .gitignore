@@ -7,7 +7,7 @@
 **/pnpm-debug.log*
 **/lerna-debug.log*
 
-.env
+*.env
 
 # Node.js directories
 **/node_modules

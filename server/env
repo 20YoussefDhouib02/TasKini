@@ -1,0 +1,7 @@
+MONGODB_URI=mongodb://localhost:27017/todo
+
+JWT_SECRET=HGw9mQ4s9*Jkf8kLmV3^fLZ2dP5!gQ8%tRz1T4@sN
+
+PORT=8800
+
+NODE_ENV=development
