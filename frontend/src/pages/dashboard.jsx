@@ -175,63 +175,50 @@ const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
 
   const [tasks, setTasks] = useState([]);
-  const [dashboardData, setDashboardData] = useState({
-    stats: {},
-  });
+  const [dashboardData, setDashboardData] = useState({ stats: {} });
+  const [isLoading, setIsLoading] = useState(true); // To manage loading state
 
   useEffect(() => {
-    const checkUserAuth = async () => {
-      const isAuthenticated = await checkAuth();
-      if (!isAuthenticated) {
-        navigate("/log-in"); // Redirect to login if not authenticated
+    const initDashboard = async () => {
+      try {
+        // Check authentication status
+        const isAuthenticated = await checkAuth();
+        if (!isAuthenticated) {
+          navigate("/log-in"); // Redirect if not authenticated
+          return;
+        }
+
+        // Fetch dashboard data if user exists
+        if (user?._id) {
+          const [dashboardStats, userTasks] = await Promise.all([
+            getStatsForDashboard(user._id),
+            getTasksForUser(user._id),
+          ]);
+          setDashboardData(dashboardStats);
+          setTasks(userTasks);
+        }
+      } catch (error) {
+        console.error("Error initializing dashboard:", error);
+        navigate("/log-in"); // Redirect on error
+      } finally {
+        setIsLoading(false); // Remove loading state
       }
     };
 
-    const fetchDashboardData = async () => {
-      if (user?._id) {
-        const data = await getStatsForDashboard(user._id);
-        setDashboardData(data);
-        const tasksData = await getTasksForUser(user._id);
-        console.log(tasksData);
-        setTasks(tasksData);
-      }
-    };
-
-    checkUserAuth();
-    fetchDashboardData();
+    initDashboard();
   }, [navigate, user?._id]);
+
+  if (isLoading) {
+    return <div>Loading...</div>; // Loading screen
+  }
 
   const { stats } = dashboardData;
 
   const statCards = [
-    {
-      _id: "1",
-      label: "TOTAL TASK",
-      total: stats?.total || 0,
-      icon: <FaNewspaper />,
-      bg: "bg-[#1d4ed8]",
-    },
-    {
-      _id: "2",
-      label: "COMPLETED TASK",
-      total: stats?.completed || 0,
-      icon: <MdAdminPanelSettings />,
-      bg: "bg-[#0f766e]",
-    },
-    {
-      _id: "3",
-      label: "TASK IN PROGRESS",
-      total: stats["in progress"] || 0,
-      icon: <LuClipboardEdit />,
-      bg: "bg-[#f59e0b]",
-    },
-    {
-      _id: "4",
-      label: "TODOS",
-      total: stats?.todo || 0,
-      icon: <FaArrowsToDot />,
-      bg: "bg-[#be185d]",
-    },
+    { _id: "1", label: "TOTAL TASK", total: stats?.total || 0, icon: <FaNewspaper />, bg: "bg-[#1d4ed8]" },
+    { _id: "2", label: "COMPLETED TASK", total: stats?.completed || 0, icon: <MdAdminPanelSettings />, bg: "bg-[#0f766e]" },
+    { _id: "3", label: "TASK IN PROGRESS", total: stats["in progress"] || 0, icon: <LuClipboardEdit />, bg: "bg-[#f59e0b]" },
+    { _id: "4", label: "TODOS", total: stats?.todo || 0, icon: <FaArrowsToDot />, bg: "bg-[#be185d]" },
   ];
 
   const Card = ({ label, count, bg, icon }) => (
@@ -241,14 +228,7 @@ const Dashboard = () => {
         <span className="text-2xl font-semibold">{count}</span>
         <span className="text-sm text-gray-400">{"last year"}</span>
       </div>
-      <div
-        className={clsx(
-          "w-10 h-10 rounded-full flex items-center justify-center text-white",
-          bg
-        )}
-      >
-        {icon}
-      </div>
+      <div className={clsx("w-10 h-10 rounded-full flex items-center justify-center text-white", bg)}>{icon}</div>
     </div>
   );
 
@@ -261,15 +241,16 @@ const Dashboard = () => {
       </div>
       <div className="w-full bg-white my-16 p-4 rounded shadow-sm">
         <h4 className="text-xl text-gray-600 font-semibold">My Calendar</h4>
-        {/* Pass necessary data to the Chart component */}
-        <Chart  />
+        <Chart />
       </div>
       <div className="mt-5 flex flex-col md:flex-row gap-4">
         <TaskTable tasks={tasks} />
-       {/*<UserTable users={summary.users} />*/}
+        {/* Uncomment UserTable if needed */}
+        {/* <UserTable users={summary.users} /> */}
       </div>
     </div>
   );
 };
+
 
 export default Dashboard;
