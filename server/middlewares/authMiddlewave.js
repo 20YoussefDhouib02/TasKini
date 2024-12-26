@@ -42,38 +42,41 @@ const isAdminRoute = (req, res, next) => {
     });
   }
 };
-const checkAuth = async (req, res, next) => {
+
+// Middleware to check if the user is authenticated
+const checkAuth = (req, res) => {
   try {
-    let token = req.cookies?.token;  // Extract token from cookies
+    const token = req.cookies?.token; // Extract token from cookies
 
-    if (token) {
-      // Verify the token using JWT
-      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-        if (err) {
-          return res.status(401).json({
-            status: false,
-            message: "Token is invalid. Please login again.",
-          });
-        }
-
-        // If token is valid, return a success response
-        res.status(200).json({
-          status: true,
-          message: "User is authenticated",
-        });
-      });
-    } else {
+    if (!token) {
       return res.status(401).json({
         status: false,
-        message: "No token found. Please login.",
+        message: "No token found. Please log in.",
       });
     }
+
+    // Verify the token
+    jwt.verify(token, process.env.JWT_SECRET, (err) => {
+      if (err) {
+        return res.status(401).json({
+          status: false,
+          message: "Invalid token. Please log in again.",
+        });
+      }
+
+      // Token is valid, user is authenticated
+      return res.status(200).json({
+        status: true,
+        message: "User is authenticated",
+      });
+    });
   } catch (error) {
-    console.error(error);
-    return res.status(401).json({
+    console.error("Error in checkAuth middleware:", error.message);
+    return res.status(500).json({
       status: false,
-      message: "Token verification failed. Please login again.",
+      message: "Server error. Please try again later.",
     });
   }
 };
+
 export { isAdminRoute, protectRoute ,checkAuth};
