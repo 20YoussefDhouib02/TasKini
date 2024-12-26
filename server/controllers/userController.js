@@ -31,9 +31,9 @@ export const registerUser = async (req, res) => {
 
       user.password = undefined;
      
-      return res.status(201).json(user);
+      res.status(201).json(user);
     } else {
-      return res
+      res
         .status(400)
         .json({ status: false, message: "Invalid user data" });
     }
@@ -69,16 +69,16 @@ export const loginUser = async (req, res) => {
 
       user.password = undefined;
      
-      return res.status(200).json({
+      res.status(200).json({
         status: true,
         message: "Login successful",
         user,
       });
-
     } else {
-      return res
-        .status(401)
-        .json({ status: false, message: "Invalid email or password" });
+      res.status(401).json({
+        status: false, 
+        message: "Invalid email or password" 
+      });
     }
   } catch (error) {
     console.log(error);
@@ -93,7 +93,7 @@ export const logoutUser = async (req, res) => {
       expires: new Date(0),
     });
 
-    return res.status(200).json({ message: "Logout successful" });
+    res.status(200).json({ message: "Logout successful" });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -104,7 +104,7 @@ export const getTeamList = async (req, res) => {
   try {
     const users = await User.find().select("name title role email isActive");
 
-    return res.status(200).json(users);
+    res.status(200).json(users);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -120,7 +120,7 @@ export const getNotificationsList = async (req, res) => {
      // isRead: { $nin: [userId] },
     }).populate("task", "title");
 
-    return res.status(201).json(notice);
+    res.status(201).json(notice);
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -150,13 +150,13 @@ export const updateUserProfile = async (req, res) => {
 
       user.password = undefined;
 
-    return res.status(201).json({
+      res.status(201).json({
         status: true,
         message: "Profile Updated Successfully.",
         user: updatedUser,
       });
     } else {
-    return res.status(404).json({ status: false, message: "User not found" });
+      res.status(404).json({ status: false, message: "User not found" });
     }
   } catch (error) {
     console.log(error);
@@ -184,7 +184,7 @@ export const markNotificationRead = async (req, res) => {
       );
     }
 
-    return res.status(201).json({ status: true, message: "Done" });
+    res.status(201).json({ status: true, message: "Done" });
   } catch (error) {
     console.log(error);
     return res.status(400).json({ status: false, message: error.message });
@@ -204,7 +204,7 @@ export const changeUserPassword = async (req, res) => {
 
       user.password = undefined;
 
-      return res.status(201).json({
+      res.status(201).json({
         status: true,
         message: `Password changed successfully.`,
       });
@@ -228,14 +228,14 @@ export const activateUserProfile = async (req, res) => {
 
       await user.save();
 
-      return res.status(201).json({
+      res.status(201).json({
         status: true,
         message: `User account has been ${
           user?.isActive ? "activated" : "disabled"
         }`,
       });
     } else {
-      return res.status(404).json({ status: false, message: "User not found" });
+      res.status(404).json({ status: false, message: "User not found" });
     }
   } catch (error) {
     console.log(error);
@@ -249,7 +249,7 @@ export const deleteUserProfile = async (req, res) => {
 
     await User.findByIdAndDelete(id);
 
-    return res
+    res
       .status(200)
       .json({ status: true, message: "User deleted successfully" });
   } catch (error) {
