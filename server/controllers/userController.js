@@ -3,19 +3,6 @@ import User from "../models/user.js";
 import { createJWT } from "../utils/index.js";
 import Notice from "../models/notification.js";
 import mongoose from 'mongoose';
-import jwt from "jsonwebtoken";
-
-export const createJWT = (res, userId) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1d" });
-
-  res.cookie("token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "strict",
-    maxAge: 24 * 60 * 60 * 1000, // 1 day
-  });
-};
-
 
 export const registerUser = async (req, res) => {
   try {
