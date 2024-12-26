@@ -1,44 +1,53 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.js";
 
+// Middleware to protect routes by verifying user authentication
 const protectRoute = async (req, res, next) => {
   try {
-    let token = req.cookies?.token;
+    const token = req.cookies?.token;
 
-    if (token) {
-      const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-      const resp = await User.findById(decodedToken.userId).select(
-        "isAdmin email"
-      );
-
-      req.user = {
-        email: resp.email,
-        isAdmin: resp.isAdmin,
-        userId: decodedToken.userId,
-      };
-
-      next();
-    } else {
-      return res
-        .status(401)
-        .json({ status: false, message: "Not authorized. Try login again." });
+    if (!token) {
+      return res.status(401).json({
+        status: false,
+        message: "Unauthorized. Please log in.",
+      });
     }
+
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decodedToken.userId).select("isAdmin email");
+
+    if (!user) {
+      return res.status(401).json({
+        status: false,
+        message: "User not found. Please log in again.",
+      });
+    }
+
+    // Attach user data to the request object
+    req.user = {
+      email: user.email,
+      isAdmin: user.isAdmin,
+      userId: decodedToken.userId,
+    };
+
+    next();
   } catch (error) {
-    console.error(error);
-    return res
-      .status(401)
-      .json({ status: false, message: "Not authorized. Try login again." });
+    console.error("Error in protectRoute middleware:", error.message);
+    return res.status(401).json({
+      status: false,
+      message: "Unauthorized. Invalid or expired token.",
+    });
   }
 };
 
+// Middleware to ensure user has admin privileges
 const isAdminRoute = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
   } else {
-    return res.status(401).json({
+    return res.status(403).json({
       status: false,
-      message: "Not authorized as admin. Try login as admin.",
+      message: "Access denied. Admin privileges required.",
     });
   }
 };
@@ -46,7 +55,7 @@ const isAdminRoute = (req, res, next) => {
 // Middleware to check if the user is authenticated
 const checkAuth = (req, res) => {
   try {
-    const token = req.cookies?.token; // Extract token from cookies
+    const token = req.cookies?.token;
 
     if (!token) {
       return res.status(401).json({
@@ -55,7 +64,6 @@ const checkAuth = (req, res) => {
       });
     }
 
-    // Verify the token
     jwt.verify(token, process.env.JWT_SECRET, (err) => {
       if (err) {
         return res.status(401).json({
@@ -79,4 +87,4 @@ const checkAuth = (req, res) => {
   }
 };
 
-export { isAdminRoute, protectRoute ,checkAuth};
+export { protectRoute, isAdminRoute, checkAuth };
