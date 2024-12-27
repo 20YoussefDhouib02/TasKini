@@ -43,10 +43,13 @@ export const registerUser = async (req, res) => {
   }
 };
 
+import { createJWT } from "../utils/index.js";
+
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Find user by email
     const user = await User.findOne({ email });
 
     if (!user) {
@@ -55,31 +58,51 @@ export const loginUser = async (req, res) => {
         .json({ status: false, message: "Invalid email or password." });
     }
 
-    if (!user?.isActive) {
+    // Check if the user account is active
+    if (!user.isActive) {
       return res.status(401).json({
         status: false,
-        message: "User account has been deactivated, contact the administrator",
+        message: "User account has been deactivated. Please contact the administrator.",
       });
     }
 
+    // Verify password
     const isMatch = await user.matchPassword(password);
-
-    if (user && isMatch) {
-      createJWT(res, user._id);
-
-      user.password = undefined;
-     
-      res.status(200).json(user);
-    } else {
+    if (!isMatch) {
       return res
         .status(401)
-        .json({ status: false, message: "Invalid email or password" });
+        .json({ status: false, message: "Invalid email or password." });
     }
+
+    // Generate JWT token
+    const token = createJWT(user._id);
+
+    // Set token as an HTTP-only cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "development", // Use secure cookies in production
+      sameSite: "Strict", // Adjust as needed, e.g., "Lax" for cross-site requests
+      maxAge: 24 * 60 * 60 * 1000, // 1 day expiration
+    });
+
+    // Remove password field from the response
+    user.password = undefined;
+
+    // Return user data
+    res.status(200).json({
+      status: true,
+      message: "Login successful.",
+      user,
+    });
   } catch (error) {
-    console.log(error);
-    return res.status(400).json({ status: false, message: error.message });
+    console.error(error);
+    return res.status(500).json({
+      status: false,
+      message: "An error occurred while logging in. Please try again later.",
+    });
   }
 };
+
 
 export const logoutUser = async (req, res) => {
   try {

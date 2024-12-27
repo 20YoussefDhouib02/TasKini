@@ -16,32 +16,34 @@ const Login = () => {
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // State for error messages
 
   // Submit handler for login
   const submitHandler = async ({ email, password }) => {
     setLoading(true);
+    setErrorMessage(""); // Clear any previous error message
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/user/login`, // Replace with your actual backend URL
+        `${import.meta.env.VITE_APP_BASE_URL}/api/user/login`,
         { email, password },
-        { withCredentials: true }
+        { withCredentials: true } // Send cookies with the request
       );
 
       if (response.status === 200) {
-        
         const userInfo = response.data;
 
-        
+        // Save user information in localStorage
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
 
-        
+        // Dispatch Redux action to store user credentials
         dispatch(setCredentials(userInfo));
 
-        
+        // Navigate to the dashboard
         navigate("/dashboard");
       }
     } catch (error) {
-      alert(
+      // Handle errors and show a message to the user
+      setErrorMessage(
         error.response?.data?.message || "Login failed. Please try again later."
       );
     } finally {
@@ -129,6 +131,13 @@ const Login = () => {
                 className="w-full h-10 bg-[#3c4556] text-white rounded-full"
                 disabled={loading} // Disable button while loading
               />
+
+              {/* Error message display */}
+              {errorMessage && (
+                <p className="text-red-500 text-sm mt-2 text-center">
+                  {errorMessage}
+                </p>
+              )}
             </div>
           </form>
         </div>
