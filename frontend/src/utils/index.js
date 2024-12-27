@@ -27,17 +27,14 @@ export const formatDate = (date) => {
   }
   
   export function getInitials(fullName) {
-    if (!fullName) {
-      return "User"; // Return "User" if fullName is undefined or empty
-    }
-  
     const names = fullName.split(" ");
+  
     const initials = names.slice(0, 2).map((name) => name[0].toUpperCase());
+  
     const initialsStr = initials.join("");
   
     return initialsStr;
   }
-  
   
   export const PRIOTITYSTYELS = {
     high: "text-red-600",

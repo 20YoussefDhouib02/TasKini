@@ -44,36 +44,36 @@ const isAdminRoute = (req, res, next) => {
 };
 const checkAuth = async (req, res, next) => {
   try {
-    // Extract token from cookies
-    let token = req.cookies?.token;
+    let token = req.cookies?.token;  // Extract token from cookies
 
-    if (!token) {
+    if (token) {
+      // Verify the token using JWT
+      jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
+        if (err) {
+          return res.status(401).json({
+            status: false,
+            message: "Token is invalid. Please login again.",
+          });
+        }
+
+        // If token is valid, return a success response
+        res.status(200).json({
+          status: true,
+          message: "User is authenticated",
+        });
+      });
+    } else {
       return res.status(401).json({
         status: false,
         message: "No token found. Please login.",
       });
     }
-
-    // Verify the token
-    jwt.verify(token, process.env.JWT_SECRET, (err, decodedToken) => {
-      if (err) {
-        return res.status(401).json({
-          status: false,
-          message: "Token is invalid or expired. Please login again.",
-        });
-      }
-
-      // If token is valid, proceed
-      req.user = decodedToken; // Attach decoded token to the request
-      next();
-    });
   } catch (error) {
     console.error(error);
-    return res.status(500).json({
+    return res.status(401).json({
       status: false,
-      message: "Internal Server Error. Please try again.",
+      message: "Token verification failed. Please login again.",
     });
   }
 };
-
 export { isAdminRoute, protectRoute ,checkAuth};

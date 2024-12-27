@@ -21,39 +21,33 @@ const Login = () => {
   const submitHandler = async ({ email, password }) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/user/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include", // Include cookies for cross-origin requests
-          body: JSON.stringify({ email, password }),
-        }
+      const response = await axios.post(
+        `${import.meta.env.VITE_APP_BASE_URL}/api/user/login`, // Replace with your actual backend URL
+        { email, password },
+        { withCredentials: true }
       );
-  
-      if (response.ok) {
-        const userInfo = await response.json();
-  
-        // Save user information in localStorage
+
+      if (response.status === 200) {
+        
+        const userInfo = response.data;
+
+        
         localStorage.setItem("userInfo", JSON.stringify(userInfo));
-  
-        // Dispatch credentials to Redux store
+
+        
         dispatch(setCredentials(userInfo));
-  
-        // Navigate to the dashboard
+
+        
         navigate("/dashboard");
-      } else {
-        const errorData = await response.json();
-        alert(errorData.message || "Login failed. Please try again.");
       }
     } catch (error) {
-      console.error(error);
-      alert("Login failed. Please try again later.");
+      alert(
+        error.response?.data?.message || "Login failed. Please try again later."
+      );
     } finally {
       setLoading(false);
     }
   };
-  
 
   // Navigate to register page
   const handleRegisterClick = () => {
