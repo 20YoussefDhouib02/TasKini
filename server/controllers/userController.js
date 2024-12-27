@@ -43,8 +43,6 @@ export const registerUser = async (req, res) => {
   }
 };
 
-import { createJWT } from "../utils/index.js";
-
 export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
