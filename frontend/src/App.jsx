@@ -105,7 +105,7 @@ function App() {
         {/* Private Routes wrapped with PrivateRoute */}
        {/* <Route element={<PrivateRoute />}>*/}
           <Route element={<Layout />}>
-            <Route index path="/" element={<Navigate to="/dashboard" />} />
+            <Route index path="/" element={<Navigate to="/log-in" />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/completed/:status" element={<Tasks />} />

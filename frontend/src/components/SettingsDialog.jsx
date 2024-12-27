@@ -123,7 +123,7 @@ const SettingsDialog = ({ open, setOpen, onUpdate }) => {
             </div>
 
             {/* Theme Preferences */}
-            <div className="flex flex-col">
+            {/* <div className="flex flex-col">
               <label className="text-sm font-semibold text-gray-700">Theme</label>
               <div className="flex items-center gap-4 mt-2">
                 <label className="flex items-center gap-2">
@@ -147,7 +147,7 @@ const SettingsDialog = ({ open, setOpen, onUpdate }) => {
                   Dark
                 </label>
               </div>
-            </div>
+            </div> */}
 
             {/* Account Status */}
             <div className="flex flex-col">

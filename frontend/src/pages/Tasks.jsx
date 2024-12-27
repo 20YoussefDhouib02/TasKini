@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { FaList } from "react-icons/fa";
+import { CgUserList } from "react-icons/cg";
 import { MdGridView } from "react-icons/md";
 import { IoMdAdd } from "react-icons/io";
 import { useParams, useNavigate } from "react-router-dom";
@@ -38,7 +38,7 @@ const TASK_TYPE = {
 // Tabs configuration
 const TABS = [
   { title: "Board View", icon: <MdGridView /> },
-  { title: "List View", icon: <FaList /> },
+  { title: "AI Help", icon: <CgUserList /> },
 ];
 
 // Function to fetch tasks for a user
@@ -133,18 +133,15 @@ const Tasks = () => {
           </div>
         )}
 
-        {selected !== 1 ? (
-          <BoardView tasks={filteredTasks} />
-          
-        ) : (
-          <div className="w-full">
-            <Table tasks={filteredTasks} />
-           {/*<Chatbot/>*/}
-           <Chatbot/>
-            
-          </div>
-          
-        )}
+      {selected !== 1 ? (
+        <BoardView tasks={filteredTasks} />
+      ) : (
+        <div className="w-full">
+          <Table tasks={filteredTasks} />
+          {filteredTasks.length > 0 && <Chatbot />}
+        </div>
+      )}
+
       </Tabs>
 
       <AddTask open={open} setOpen={setOpen} />

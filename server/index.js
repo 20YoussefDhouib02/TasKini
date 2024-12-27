@@ -15,18 +15,23 @@ const PORT = process.env.PORT || 5000;
 
 const app = express();
 
-// const allowedOrigins = [
-//   "http://localhost:3000",
-//   "https://taskini.vercel.app", 
-// ];
+// Get the allowed origin from the environment variable
+const allowedOrigin = process.env.ALLOWEDORIGIN;
 
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      if (!origin || origin === allowedOrigin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Domain Not allowed"));
+      }
+    },
     methods: ["GET", "POST", "DELETE", "PUT"],
     credentials: true,
   })
 );
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

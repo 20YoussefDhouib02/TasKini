@@ -49,7 +49,7 @@ const Chatbot = () => {
     <div className="flex flex-col h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-blue-600 text-white p-4 text-xl font-bold shadow-lg">
-        Chatbot Assistant
+        TasKini AI Assistant
       </div>
 
       {/* Chat Area */}

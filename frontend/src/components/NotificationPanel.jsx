@@ -46,7 +46,7 @@ const NotificationPanel = () => {
   }, [userId]);
 
   const readHandler = () => {
-    // Implement logic for marking all notifications as read if needed
+    notifications.length=0
   };
 
   const viewHandler = (notification) => {
