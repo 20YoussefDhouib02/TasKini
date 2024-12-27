@@ -20,16 +20,12 @@ const checkAuth = async () => {
     const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/user/check-auth`, {
       withCredentials: true,
     });
-
-    // Check if user is authenticated
-    return response.data?.status === true;
+    return response.data.status === true;
   } catch (error) {
-    console.error("Error checking authentication:", error.response?.data?.message || error.message);
+    console.error("Error checking auth:", error);
     return false;
   }
 };
-
-
 const getStatsForDashboard = async (userId) => {
   try {
     const response = await axios.get(
@@ -187,29 +183,23 @@ const Dashboard = () => {
     const checkUserAuth = async () => {
       const isAuthenticated = await checkAuth();
       if (!isAuthenticated) {
-        navigate("/log-in"); // Redirect to login
+        navigate("/log-in"); // Redirect to login if not authenticated
       }
     };
-  
+
     const fetchDashboardData = async () => {
       if (user?._id) {
-        try {
-          const data = await getStatsForDashboard(user._id);
-          setDashboardData(data);
-  
-          const tasksData = await getTasksForUser(user._id);
-          setTasks(tasksData);
-        } catch (error) {
-          console.error("Error fetching dashboard data:", error);
-        }
+        const data = await getStatsForDashboard(user._id);
+        setDashboardData(data);
+        const tasksData = await getTasksForUser(user._id);
+        console.log(tasksData);
+        setTasks(tasksData);
       }
     };
-  
+
     checkUserAuth();
     fetchDashboardData();
   }, [navigate, user?._id]);
-  
-  
 
   const { stats } = dashboardData;
 

@@ -31,9 +31,9 @@ export const registerUser = async (req, res) => {
 
       user.password = undefined;
      
-      res.status(201).json(user);
+      return res.status(201).json(user);
     } else {
-      res
+      return res
         .status(400)
         .json({ status: false, message: "Invalid user data" });
     }
@@ -69,16 +69,11 @@ export const loginUser = async (req, res) => {
 
       user.password = undefined;
      
-      res.status(200).json({
-        status: true,
-        message: "Login successful",
-        user,
-      });
+      res.status(200).json(user);
     } else {
-      res.status(401).json({
-        status: false, 
-        message: "Invalid email or password" 
-      });
+      return res
+        .status(401)
+        .json({ status: false, message: "Invalid email or password" });
     }
   } catch (error) {
     console.log(error);
