@@ -37,7 +37,7 @@ const Users = () => {
       }
     };
 
-    // verifyAuth();
+    verifyAuth();
   }, [navigate]);
 
   const deleteClick = (id) => {

@@ -25,7 +25,7 @@ const PrivateRoute = ({ children }) => {
       const authStatus = await checkAuth();
       setIsAuthenticated(authStatus);
     };
-    // checkUserAuth();
+    checkUserAuth();
   }, []);
   
   if (isAuthenticated === null) {

@@ -88,7 +88,7 @@ const Tasks = () => {
       }
     };
 
-    // checkUserAuth();
+    checkUserAuth();
     fetchTasks();
   }, [navigate, user?._id]);
 
