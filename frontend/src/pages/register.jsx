@@ -194,7 +194,7 @@ const Register = () => {
             >
               Log in
             </span>
-          </div>
+             </div>
           </form>
 
           

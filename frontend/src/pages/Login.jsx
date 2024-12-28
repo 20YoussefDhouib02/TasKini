@@ -84,7 +84,7 @@ const Login = () => {
                 Welcome back!
               </p>
               <p className="text-center text-base text-gray-700">
-                Keep all your credentials safe.
+                Don't forget to keep your credentials safe.
               </p>
             </div>
 
@@ -111,14 +111,12 @@ const Login = () => {
                 })}
                 error={errors.password ? errors.password.message : ""}
               />
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-500 hover:text-blue-600 hover:underline cursor-pointer">
-                  Forget Password?
-                </span>
+
+              <div className="text-sm text-center text-gray-500 mt-4">
+                Don't have an account?{" "}
                 <span
                   onClick={handleRegisterClick}
-                  className="text-sm text-gray-500 hover:text-blue-600 hover:underline cursor-pointer"
-                >
+                  className="text-[#3c4556] hover:underline cursor-pointer bold">
                   Register
                 </span>
               </div>
