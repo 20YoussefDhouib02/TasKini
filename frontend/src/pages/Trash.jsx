@@ -70,7 +70,7 @@ const Trash = () => {
       }
     };
 
-    verifyAuth();
+    // verifyAuth();
     fetchTasks();
   }, [navigate, user?._id]);
 

@@ -197,7 +197,7 @@ const Dashboard = () => {
       }
     };
 
-    checkUserAuth();
+    // checkUserAuth();
     fetchDashboardData();
   }, [navigate, user?._id]);
 
